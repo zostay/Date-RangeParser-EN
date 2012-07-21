@@ -514,7 +514,7 @@ sub _parse_date_manip
             my ($year, $month, $day) = split(/\-/, $date_part);
             my ($hour, $minute, $second) = split( /\:/, $time_part);
 
-            $date = $self->datetime_class->new(
+            $date = $self->_datetime_class->new(
                 year   => $year,
                 month  => $month,
                 day    => $day,
