@@ -1,4 +1,7 @@
 Revision history for Perl extension Date::RangeParser::EN
 
+0.02  Fri Jul 27 17:24:12 2012
+    - fix POD bugs
+
 0.01  Fri Jul 20 20:40:32 2012
     - original version
