@@ -6,18 +6,18 @@ use warnings;
 use Date::Manip qw(ParseDate UnixDate);
 use DateTime;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
-Date::RangeParser::EN
+Date::RangeParser::EN - Parser for plain English date/time range strings
 
 =head1 SYNOPSIS
 
-use Date::RangeParser::EN;
+    use Date::RangeParser::EN;
 
-my $parser = Date::RangeParser::EN->new;
-my ($begin, $end) = $parser->parse_range("this week");
+    my $parser = Date::RangeParser::EN->new;
+    my ($begin, $end) = $parser->parse_range("this week");
 
 =head1 DESCRIPTION
 
