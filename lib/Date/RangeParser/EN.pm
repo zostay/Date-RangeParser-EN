@@ -457,12 +457,29 @@ sub parse_range
         $beg = $self->_bod()->set(year => $y, month => $m, day => 1);
         $end = $self->_datetime_class()->last_day_of_month(year => $y, month => $m, %eod);
     }
+
+    # Match a month with a 4-digit year
+    elsif ($string =~ /^($month_re)\s+(\d{4})$/) 
+    {
+        my ($y, $m) = ($2, $1);
+        while (my ($re, $val) = each %month) {
+            if ($m =~ /$re/) {
+                $m = $val;
+                keys %month;    # Reset each counter
+                last;
+            }
+        }
+        $beg = $self->_bod()->set(year => $y, month => $m, day => 1);
+        $end = $self->_datetime_class()->last_day_of_month(year => $y, month => $m, %eod);
+    }
+
     # If all else fails, see if Date::Manip can figure this out
     elsif ($beg = $self->_parse_date_manip($string))
     {
         $beg = $beg->set(%bod);
         $end = $beg->clone->set(hour => 23, minute => 59, second => 59);
     }
+
     else
     {
         return ();
