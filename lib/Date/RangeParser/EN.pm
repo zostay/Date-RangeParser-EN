@@ -473,6 +473,23 @@ sub parse_range
         $end = $self->_datetime_class()->last_day_of_month(year => $y, month => $m, %eod);
     }
 
+    # See if the date is a range between two other dates separated by
+    # to,thru,through the(?)
+    elsif ($string =~ /\s(?:to|thru|through|-)\s/) 
+    {
+        my ($first, $second) = split /\s+(?:to|thru|through|-)(?:\s+the)?\s+/, $string, 2;
+        ($beg) = $self->parse_range($first);
+        (undef, $end) = $self->parse_range($second);
+    }
+
+    # See if this is a range between two other dates separated by -
+    elsif ($string !~ /^\d+-\d+$/ and $string =~ /^[^-]+-[^-]+$/) 
+    {
+        my ($first, $second) = split /\s*-\s*/, $string, 2;
+        ($beg) = $self->parse_range($first);
+        (undef, $end) = $self->parse_range($second);
+    }
+
     # If all else fails, see if Date::Manip can figure this out
     elsif ($beg = $self->_parse_date_manip($string))
     {
