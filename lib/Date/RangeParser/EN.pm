@@ -440,9 +440,9 @@ sub parse_range
     elsif ($string =~ /^(this|last|next)?\s*($month_re)$/)
     {
         my ($y, $m) = ($1, $2);
-        if ($y eq 'last') {
+        if (defined $y and $y eq 'last') {
             $y = $self->_now->year - 1;
-        } elsif ($y eq 'next') {
+        } elsif (defined $y and $y eq 'next') {
             $y = $self->_now->year + 1;
         } else {
             $y = $self->_now->year;
