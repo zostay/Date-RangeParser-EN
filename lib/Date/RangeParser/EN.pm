@@ -3,7 +3,7 @@ package Date::RangeParser::EN;
 use strict;
 use warnings;
 
-use Date::Manip qw(ParseDate UnixDate);
+use Date::Manip;
 use DateTime;
 
 our $VERSION = '0.02';
@@ -506,21 +506,41 @@ sub _parse_date_manip
 
     # wrap in eval as Date::Manip fatally dies on strange input (ie. 010101)
     eval {
-        # try parsing with Date::Manip
-        my $parsed_date = ParseDate( $val );
-        if ( $parsed_date )
-        {
-            my ($date_part, $time_part) = split(/ /, UnixDate($parsed_date, '%Y-%m-%d %T'));
-            my ($year, $month, $day) = split(/\-/, $date_part);
-            my ($hour, $minute, $second) = split( /\:/, $time_part);
 
-            $date = $self->_datetime_class->new(
-                year   => $year,
-                month  => $month,
-                day    => $day,
-                hour   => $hour,
-                minute => $minute,
-                second => $second,
+        # we need to know what we consider to be "now"
+        my $now = $self->_now;
+
+        # If this is all we have or the DM5 interface has been selected by the
+        # app, use the ol' functional and reset after each parse.
+        my ($y, $m, $d, $H, $M, $S);
+        if ($Date::Manip::VERSION lt '6' or $Date::Manip::Backend eq 'DM5') {
+            my @orig_config = Date::Manip::Date_Init();
+            Date::Manip::Date_Init("ForceDate=" . $now->ymd . "-" . $now->hms);
+            my $date = Date::Manip::ParseDate($val);
+            Date::Manip::Date_Init(@orig_config);
+
+            ($y, $m, $d, $H, $M, $S) = Date::Manip::UnixDate($date, "%Y", "%m", "%d", "%H", "%M", "%S");
+        }
+
+        # When available, use the DM6 OO API to prevent this configuration from
+        # infecting the global state
+        else {
+            my $dm = Date::Manip::Date->new;
+            $dm->config("forcedate", $now->ymd . '-' . $now->hms);
+            my $err = $dm->parse($val);
+
+            ($y, $m, $d, $H, $M, $S) = $dm->value unless $err;
+        }
+
+        if ( $y )
+        {
+            $date = $self->_datetime_class->new( 
+                year   => $y,
+                month  => $m,
+                day    => $d,
+                hour   => $H,
+                minute => $M,
+                second => $S,
             );
         }
     };
