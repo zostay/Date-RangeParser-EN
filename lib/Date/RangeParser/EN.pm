@@ -704,7 +704,8 @@ sub _parse_date_manip
         # If this is all we have or the DM5 interface has been selected by the
         # app, use the ol' functional and reset after each parse.
         my ($y, $m, $d, $H, $M, $S);
-        if ($Date::Manip::VERSION lt '6' or $Date::Manip::Backend eq 'DM5') {
+        my $dm_backend = $Date::Manip::Backend || '';
+        if ($Date::Manip::VERSION lt '6' or $dm_backend eq 'DM5') {
             my @orig_config = Date::Manip::Date_Init();
             Date::Manip::Date_Init("ForceDate=" . $now->ymd . "-" . $now->hms);
             my $date = Date::Manip::ParseDate($val);
