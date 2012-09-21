@@ -1,5 +1,16 @@
 Revision history for Perl extension Date::RangeParser::EN
 
+0.03  Wed Sep 19 11:43:36 2012
+    - Add support for parsing months followed by a 4-digit year, like 
+      August 2012
+    - Add support for parsing explicit ranges where either side of the range is
+      something Date::RangeParser::EN already supports, e.g., 
+      August to December, January 21 thru February 1st, 9/1 - 9/5, 
+      Jun through the end of this year, etc.
+    - The now_callback is used to set the ForceDate setting of Date::Manip when
+      falling back to Date::Manip for parsing. Care has been taken to make sure
+      this happens correctly for DM5 and DM6
+
 0.02  Fri Jul 27 17:24:12 2012
     - fix POD bugs
 

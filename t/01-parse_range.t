@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Date::RangeParser::EN;
-use Test::More tests => 96;
+use Test::More;
 
 my @tests = (
     {
@@ -265,6 +265,111 @@ my @tests = (
         as_of         => '2013-06-21',
         beg           => '09/21/2012 12:00AM',
         end           => '09/21/2012 11:59PM',
+    }, {
+        date_range_string => '9/1/2012-9/30/2012',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2012 12:00AM',
+        end               => '09/30/2012 11:59PM',
+    }, {
+        date_range_string => '9/1/12-9/30/12',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2012 12:00AM',
+        end               => '09/30/2012 11:59PM',
+    }, {
+        date_range_string => '9/1-9/30',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2013 12:00AM',
+        end               => '09/30/2013 11:59PM',
+    }, {
+        date_range_string => '9/1/2012 to 9/30/2012',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2012 12:00AM',
+        end               => '09/30/2012 11:59PM',
+    }, {
+        date_range_string => '9/1/12 thru 9/30/12',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2012 12:00AM',
+        end               => '09/30/2012 11:59PM',
+    }, {
+        date_range_string => '9/1 through the 9/30',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2013 12:00AM',
+        end               => '09/30/2013 11:59PM',
+    }, {
+        date_range_string => '9-1-2012 thru the 9-30-2012',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2012 12:00AM',
+        end               => '09/30/2012 11:59PM',
+    }, {
+        date_range_string => '9-1-2012 - 9-30-2012',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2012 12:00AM',
+        end               => '09/30/2012 11:59PM',
+    }, {
+        date_range_string => '9-1-12 to 9-30-12',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2012 12:00AM',
+        end               => '09/30/2012 11:59PM',
+    }, {
+        date_range_string => '9-1 through the 9-30',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2013 12:00AM',
+        end               => '09/30/2013 11:59PM',
+    }, {
+        date_range_string => '2012-9-1 to 2012-9-30',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2012 12:00AM',
+        end               => '09/30/2012 11:59PM',
+    }, {
+        date_range_string => '2012-9-1 - 2012-9-30',
+        as_of             => '2013-06-22',
+        beg               => '09/01/2012 12:00AM',
+        end               => '09/30/2012 11:59PM',
+    }, {
+        date_range_string => 'August 2012',
+        as_of             => '2013-06-22',
+        beg               => '08/01/2012 12:00AM',
+        end               => '08/31/2012 11:59PM',
+    }, {
+        date_range_string => 'August',
+        as_of             => '2013-06-22',
+        beg               => '08/01/2013 12:00AM',
+        end               => '08/31/2013 11:59PM',
+    }, {
+        date_range_string => 'August 29',
+        as_of             => '2013-06-22',
+        beg               => '08/29/2013 12:00AM',
+        end               => '08/29/2013 11:59PM',
+    }, {
+        date_range_string => 'August 29th',
+        as_of             => '2013-06-22',
+        beg               => '08/29/2013 12:00AM',
+        end               => '08/29/2013 11:59PM',
+    }, {
+        date_range_string => 'Aug 2012',
+        as_of             => '2013-06-22',
+        beg               => '08/01/2012 12:00AM',
+        end               => '08/31/2012 11:59PM',
+    }, {
+        date_range_string => 'Aug',
+        as_of             => '2013-06-22',
+        beg               => '08/01/2013 12:00AM',
+        end               => '08/31/2013 11:59PM',
+    }, {
+        date_range_string => 'Aug 29',
+        as_of             => '2013-06-22',
+        beg               => '08/29/2013 12:00AM',
+        end               => '08/29/2013 11:59PM',
+    }, {
+        date_range_string => 'Aug 29th',
+        as_of             => '2013-06-22',
+        beg               => '08/29/2013 12:00AM',
+        end               => '08/29/2013 11:59PM',
+    }, {
+        date_range_string => 'Jun - 2/12/2014',
+        as_of             => '2013-06-22',
+        beg               => '06/01/2013 12:00AM',
+        end               => '02/12/2014 11:59PM',
     },
 );
 
@@ -281,6 +386,9 @@ for my $test (@tests)
     );
 
     my ($beg, $end) = $parser->parse_range($test->{date_range_string});
+
+    ok(defined $beg, "Beginning date for $test->{date_range_string} is defined");
+    ok(defined $end, "End date for $test->{date_range_string} is defined");
 
     cmp_ok($beg->strftime("%m/%d/%Y %I:%M%p"), 'eq', $test->{beg}, "Beginning date ok for $test->{date_range_string}");
     cmp_ok($end->strftime("%m/%d/%Y %I:%M%p"), 'eq', $test->{end}, "Ending date ok for $test->{date_range_string}");
@@ -305,6 +413,8 @@ my $now = DateTime->now;
 cmp_ok("$beg", 'eq', "$now");
 my $now_plus_2 = $now->clone->add(hours => 2);
 cmp_ok("$end", 'eq', "$now_plus_2");
+
+done_testing;
 
 package Date::RangeParser::EN::Test::DateTime;
 

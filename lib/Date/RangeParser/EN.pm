@@ -3,10 +3,10 @@ package Date::RangeParser::EN;
 use strict;
 use warnings;
 
-use Date::Manip qw(ParseDate UnixDate);
+use Date::Manip;
 use DateTime;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 NAME
 
@@ -93,6 +93,17 @@ Takes an optional hash of parameters:
 
 By default, Date::RangeParser::EN returns two L<DateTime> objects representing the beginning and end of the range. If you use a subclass of DateTime (or another module that implements the DateTime API), you may pass the name of this class to use it instead.
 
+At the very least, this given class must implement a C<new> method that accepts a hash of arguments, where the following keys will be set:
+
+  year
+  month
+  day
+  hour
+  minute
+  second
+
+This gives you the freedom to set your time zones and such however you need to.
+
 =item * B<now_callback>
 
 By default, Date::RangeParser::EN uses DateTime->now to determine the current date/time for calculations. If you need to work with a different time (for instance, if you need to adjust for time zones), you may pass a callback (code reference) which returns a DateTime object.
@@ -136,7 +147,153 @@ Accepts a string representing a plain-English date range, for instance:
 
 =back
 
-Returns two DateTime objects, reprensenting the beginning and end of the range.
+More formally, this will parse the following kinds of date strings:
+
+  NUMBER : ordinary number (1)
+  PERIOD : one of: hour, day, week, month, quarter, or year (or the plural of these)
+  WEEKDAY : one of: Monday, Tuesday, Wedensday, Thursday, Friday, Saturday, or Sunday
+  CARDINAL : a cardinal number (21st) or the word for that number (twenty-first) or end
+  MONTH : a month name: January, Feburary, March, April, May, June, July August, 
+          September, October, November, or Decmeber or any 3-letter abbreviation
+  YEAR : a 4-digit year (2-digits will not work)
+  RANGE : any date range that can be parsed by parse_range
+
+  today                             : today, midnight to midnight
+
+  this PERIOD                       : the current period, start to end
+  this month
+
+  current PERIOD                    : the current period, start to end
+  current year
+
+  this WEEKDAY                      : the WEEKDAY that is in the current week, midnight to midnight
+  this Monday
+
+  NUMBER PERIOD ago                 : past date relative to now until now
+  3 days ago
+
+  past NUMBER PERIOD                : past date relative to now until now
+  past 2 weeks
+
+  last NUMBER PERIOD                : past date relative to now until now
+  last 6 hours
+
+  past NUMBER WEEKDAY               : the weekday a number of weeks before now until now
+  past 4 Saturdays
+
+  NUMBER WEEKDAY ago                : the weekday a number of weeks before now until now
+  3 Fridays ago
+
+  yesterday                         : yesterday, midnight to midnight
+
+  last WEEKDAY                      : the WEEKDAY that is in the week prior to this, midnight to midnight
+  last Wednesday
+
+  previous WEEKDAY                  : the WEEKDAY that is in the week prior to this, midnight to midnight
+  previous Friday
+
+  past WEEKDAY                      : the WEEKDAY that is in the week prior to this, midnight to midnight
+  past Tuesday
+
+  this past WEEKDAY                 : the WEEKDAY that is in the week prior to this, midnight to midnight
+  this past Saturday
+
+  coming WEEKDAY                    : the WEEKDAY that is in the week after this, midnight to midnight
+  coming Monday
+
+  this coming WEEKDAY               : the WEEKDAY that is in the week after this, midnight to midnight
+  this coming Thursday
+
+  NUMBER PERIOD hence               : now to a future date relative to now
+  4 months hence
+
+  NUMBER PERIOD from now            : now to a future date relative to now
+  6 days from now
+
+  next NUMBER PERIOD                : now to a future date relative to now
+  next 7 years
+
+  tomorrow                          : tomorrow, midnight to midnight
+
+  next NUMBER WEEKDAY               : the WEEKDAY that is in a number of weeks after this, midnight to midnight
+  next 4 Sundays
+
+  CARDINAL of this month            : the specified day of the current month, midnight to midnight
+  14th of this month
+
+  CARDINAL of last month            : the specified day of the previous month, midnight to midnight
+  31st of last month
+
+  CARDINAL of next month            : the specified day of the month following this, midnight to midnight
+  3rd of next month
+
+  CARDINAL of NUMBER months ago     : the specified day of a previous month, midnight to midnight
+  12th of 2 months ago
+
+  CARDINAL of NUMBER months from now : the specified day of a following month, midnight to midnight
+  7th of 22 months from now
+
+  CARDINAL of NUMBER months hence   : the specified day of a following month, midnight to midnight
+  22nd of 6 months hence
+
+  MONTH                             : the named month of the current year, 1st to last day
+  August
+
+  this MONTH                        : the named month of the current year, 1st to last day
+  this Sep
+
+  last MONTH                        : the named month of the previous year, 1st to last day
+  last January
+
+  next MONTH                        : the named month of the next year, 1st to last day
+  next Dec
+
+  MONTH YEAR                        : the named month of the named year, 1st to last day
+  June 1969
+
+  RANGE to RANGE                    : the very start of the first range to the very end of the second
+  Tuesday to Next Saturday
+
+  RANGE thru RANGE                  : the very start of the first range to the very end of the second
+  2 hours ago thru the next 6 hours
+
+  RANGE through RANGE               : the very start of the first range to the very end of the second
+  August through December
+
+  RANGE - RANGE                     : the very start of the first range to the very end of the second
+  9-1-2012 - 9-30-2012
+
+  RANGE-RANGE                       : the very start of the first range to the very end of the second
+  10/10-10/20                         (ranges must not contain hyphens, "-")
+
+Anything else is parsed by L<Date::Manip>. If Date::Manip is unable to parse the
+date given either, then the dates returned will be undefined.
+
+Also, when parsing:
+
+=over
+
+=item *
+
+The word "the" will always be ignored and can appear anywhere.
+
+=item *
+
+Cardinal numbers may be spelled out as words, i.e. "September first" instead of
+"September 1st".
+
+=item * 
+
+Any plural or singular period shown above can be used with the opposite.
+
+=item *
+
+All dates are parsed relative to the parser's notion of now. You can control
+this by setting the C<now_callback> option on the constructor.
+
+=back
+
+Returns two L<DateTime> objects, reprensenting the beginning and end of the range.
 
 =cut
 
@@ -440,9 +597,9 @@ sub parse_range
     elsif ($string =~ /^(this|last|next)?\s*($month_re)$/)
     {
         my ($y, $m) = ($1, $2);
-        if ($y eq 'last') {
+        if (defined $y and $y eq 'last') {
             $y = $self->_now->year - 1;
-        } elsif ($y eq 'next') {
+        } elsif (defined $y and $y eq 'next') {
             $y = $self->_now->year + 1;
         } else {
             $y = $self->_now->year;
@@ -457,12 +614,46 @@ sub parse_range
         $beg = $self->_bod()->set(year => $y, month => $m, day => 1);
         $end = $self->_datetime_class()->last_day_of_month(year => $y, month => $m, %eod);
     }
+
+    # Match a month with a 4-digit year
+    elsif ($string =~ /^($month_re)\s+(\d{4})$/) 
+    {
+        my ($y, $m) = ($2, $1);
+        while (my ($re, $val) = each %month) {
+            if ($m =~ /$re/) {
+                $m = $val;
+                keys %month;    # Reset each counter
+                last;
+            }
+        }
+        $beg = $self->_bod()->set(year => $y, month => $m, day => 1);
+        $end = $self->_datetime_class()->last_day_of_month(year => $y, month => $m, %eod);
+    }
+
+    # See if the date is a range between two other dates separated by
+    # to,thru,through
+    elsif ($string =~ /\s(?:to|thru|through|-)\s/) 
+    {
+        my ($first, $second) = split /\s+(?:to|thru|through|-)\s+/, $string, 2;
+        ($beg) = $self->parse_range($first);
+        (undef, $end) = $self->parse_range($second);
+    }
+
+    # See if this is a range between two other dates separated by -
+    elsif ($string !~ /^\d+-\d+$/ and $string =~ /^[^-]+-[^-]+$/) 
+    {
+        my ($first, $second) = split /\s*-\s*/, $string, 2;
+        ($beg) = $self->parse_range($first);
+        (undef, $end) = $self->parse_range($second);
+    }
+
     # If all else fails, see if Date::Manip can figure this out
     elsif ($beg = $self->_parse_date_manip($string))
     {
         $beg = $beg->set(%bod);
         $end = $beg->clone->set(hour => 23, minute => 59, second => 59);
     }
+
     else
     {
         return ();
@@ -506,21 +697,41 @@ sub _parse_date_manip
 
     # wrap in eval as Date::Manip fatally dies on strange input (ie. 010101)
     eval {
-        # try parsing with Date::Manip
-        my $parsed_date = ParseDate( $val );
-        if ( $parsed_date )
-        {
-            my ($date_part, $time_part) = split(/ /, UnixDate($parsed_date, '%Y-%m-%d %T'));
-            my ($year, $month, $day) = split(/\-/, $date_part);
-            my ($hour, $minute, $second) = split( /\:/, $time_part);
 
-            $date = $self->_datetime_class->new(
-                year   => $year,
-                month  => $month,
-                day    => $day,
-                hour   => $hour,
-                minute => $minute,
-                second => $second,
+        # we need to know what we consider to be "now"
+        my $now = $self->_now;
+
+        # If this is all we have or the DM5 interface has been selected by the
+        # app, use the ol' functional and reset after each parse.
+        my ($y, $m, $d, $H, $M, $S);
+        if ($Date::Manip::VERSION lt '6' or $Date::Manip::Backend eq 'DM5') {
+            my @orig_config = Date::Manip::Date_Init();
+            Date::Manip::Date_Init("ForceDate=" . $now->ymd . "-" . $now->hms);
+            my $date = Date::Manip::ParseDate($val);
+            Date::Manip::Date_Init(@orig_config);
+
+            ($y, $m, $d, $H, $M, $S) = Date::Manip::UnixDate($date, "%Y", "%m", "%d", "%H", "%M", "%S");
+        }
+
+        # When available, use the DM6 OO API to prevent this configuration from
+        # infecting the global state
+        else {
+            my $dm = Date::Manip::Date->new;
+            $dm->config("forcedate", $now->ymd . '-' . $now->hms);
+            my $err = $dm->parse($val);
+
+            ($y, $m, $d, $H, $M, $S) = $dm->value unless $err;
+        }
+
+        if ( $y )
+        {
+            $date = $self->_datetime_class->new( 
+                year   => $y,
+                month  => $m,
+                day    => $d,
+                hour   => $H,
+                minute => $M,
+                second => $S,
             );
         }
     };
@@ -534,11 +745,33 @@ There's a lot more that this module could handle. A few items that come to mind:
 
 =over 4
 
-=item * allow full words instead of digits ("two weeks ago" vs "2 weeks ago")
+=item * 
 
-=item * allow simple, easily-parsable ranges ("1/1/2012-12/31/2012")
+More testing to make sure certain date configurations are handled, like start of
+week.
 
-=item * allow larger ranges ("between last February and this Friday")
+=item *
+
+Handle Unicode in places where such handling makes sense (like hyphen detection)
+
+=item * 
+
+Allow full words instead of digits ("two weeks ago" vs "2 weeks ago")
+
+=item * 
+
+Allow "between" for ranges ("between last February and this Friday") in addition
+to "to/through" ranges
+
+=item *
+
+This module is US English-centric (hence the "EN") and might do some things
+wrong for other variants of English and a generic C<Date::RangeParser> interface
+could be made to allow for other languages to be parsed this way.
+
+=item *
+
+Depends on L<Date::Manip>. This may or may not be a good thing.
 
 =back
 
