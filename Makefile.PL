@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME              => 'Date::RangeParser::EN',
     VERSION_FROM      => 'lib/Date/RangeParser/EN.pm', # finds $VERSION
-    PREREQ_PM         => { 'Date::RangeParser::EN' => 0 },
+    PREREQ_PM         => { 'Date::Manip' => 0, 'DateTime' => 0 },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Date/RangeParser/EN.pm', # retrieve abstract from module
        AUTHOR         => 'Michael Aquilina <aquilina@cpan.org>') : ()),
