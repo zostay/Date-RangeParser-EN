@@ -1,6 +1,6 @@
 Revision history for Perl extension Date::RangeParser::EN
 
-0.03  Wed Sep 19 11:43:36 2012
+0.04  Wed Sep 19 11:43:36 2012
     - Add support for parsing months followed by a 4-digit year, like 
       August 2012
     - Add support for parsing explicit ranges where either side of the range is
