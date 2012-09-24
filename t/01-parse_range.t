@@ -387,11 +387,16 @@ for my $test (@tests)
 
     my ($beg, $end) = $parser->parse_range($test->{date_range_string});
 
-    ok(defined $beg, "Beginning date for $test->{date_range_string} is defined");
-    ok(defined $end, "End date for $test->{date_range_string} is defined");
+    SKIP: {
+        skip "Skipping $test->{date_range_string} because Date::Manip v5.xx doesn't do that sort of thing." => 4
+            if $test->{date_range_string} =~ /^\d-\d/ and $Date::Manip::VERSION lt '6';
 
-    cmp_ok($beg->strftime("%m/%d/%Y %I:%M%p"), 'eq', $test->{beg}, "Beginning date ok for $test->{date_range_string}");
-    cmp_ok($end->strftime("%m/%d/%Y %I:%M%p"), 'eq', $test->{end}, "Ending date ok for $test->{date_range_string}");
+        ok(defined $beg, "Beginning date for $test->{date_range_string} is defined");
+        ok(defined $end, "End date for $test->{date_range_string} is defined");
+
+        cmp_ok($beg->strftime("%m/%d/%Y %I:%M%p"), 'eq', $test->{beg}, "Beginning date ok for $test->{date_range_string}");
+        cmp_ok($end->strftime("%m/%d/%Y %I:%M%p"), 'eq', $test->{end}, "Ending date ok for $test->{date_range_string}");
+    };
 }
 
 my $parser = Date::RangeParser::EN->new(
