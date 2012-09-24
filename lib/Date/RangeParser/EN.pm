@@ -786,6 +786,10 @@ This module was authored by Grant Street Group (L<http://grantstreet.com>), whic
 
 The CPAN distribution is maintained by Michael Aquilina (aquilina@cpan.org).
 
+=head1 THANK YOU
+
+Thanks to Sterling Hanenkamp for adding support for explicit date ranges, improved parsing, and improving the documentation.
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright (C) 2012 Grant Street Group.
