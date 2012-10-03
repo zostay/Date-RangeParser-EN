@@ -157,6 +157,7 @@ More formally, this will parse the following kinds of date strings:
           September, October, November, or Decmeber or any 3-letter abbreviation
   YEAR : a 4-digit year (2-digits will not work)
   RANGE : any date range that can be parsed by parse_range
+  ELEMENT : any element of a date range that can be parsed by parse_range
 
   today                             : today, midnight to midnight
 
@@ -265,6 +266,9 @@ More formally, this will parse the following kinds of date strings:
 
   RANGE-RANGE                       : the very start of the first range to the very end of the second
   10/10-10/20                         (ranges must not contain hyphens, "-")
+
+  since ELEMENT                     : the date specified in the ELEMENT to the end of the current day
+  since last Sunday
 
 Anything else is parsed by L<Date::Manip>. If Date::Manip is unable to parse the
 date given either, then the dates returned will be undefined.
@@ -638,6 +642,16 @@ sub parse_range
         ($beg) = $self->parse_range($first);
         (undef, $end) = $self->parse_range($second);
     }
+
+    elsif ($string =~ /^since /i) {
+        $string =~ s/^since //i;
+        ($beg) = $self->parse_range($string);
+        # Merriam-Webster defines since as "from a definite past time until now",
+        # thus $end is the end of the day today and not infinity.
+        $end = $self->_now()->clone->set(hour => 23, minute => 59, second => 59);
+    }
+
+    # TODO: Support "after [date]". This requires handling of infinite dates.
 
     # See if this is a range between two other dates separated by -
     elsif ($string !~ /^\d+-\d+$/ and $string =~ /^[^-]+-[^-]+$/) 
