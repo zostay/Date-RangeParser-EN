@@ -796,7 +796,7 @@ L<DateTime>, L<Date::Manip>
 
 =head1 AUTHORS
 
-This module was authored by Grant Street Group (L<http://grantstreet.com>), which was kind enough to give it back to the Perl community.
+This module was authored by Grant Street Group (L<http://grantstreet.com>), who were kind enough to give it back to the Perl community.
 
 The CPAN distribution is maintained by Michael Aquilina (aquilina@cpan.org).
 
