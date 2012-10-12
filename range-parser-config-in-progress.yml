@@ -1,0 +1,438 @@
+---
+words2nums_package: Lingua::EN::Words2Nums
+
+skip_words:
+    - the
+    - an
+    - a
+    - of
+
+tokens:
+    DATE: "^"
+    CARDINAL: "#th"
+    CARDINAL: "#"
+    CURRENT: [ this, current ]
+    WEEKDAYS:
+        - value: 0
+          synonyms: [ sunday, sundays, sun, sun. ]
+        - value: 1
+          synonyms: [ monday, mondays, mon, mon. ]
+        - value: 2
+          synonyms: [ tuesday, tuesdays, tues, tues., tue, tue. ]
+        - value: 3
+          synonyms: [ wednesday, wednesdays, wed, wed. ]
+        - value: 4
+          synonyms: [ thursday, thursdays, thurs, thurs., thur, thur., thu, thu. ]
+        - value: 5
+          synonyms: [ friday, fridays, fri, fri. ]
+        - value: 6
+          synonyms: [ saturday, saturdays, sat, sat. ]
+    PAST: [ last, past ]
+    PREVOIUS: [ last, past, previous ]
+    HOURS: [ hour, hours ]
+    DAYS: [ day, days ]
+    WEEKS: [ week, weeks ]
+    MONTHS: [ month, months ]
+    QUARTERS: [ quarter, quarters ]
+    YEARS: [ year, years ]
+
+rules:
+    - match: 
+        - today
+        - CURRENT day
+      beginning:
+        - start of day
+      end:
+        - end of day
+
+    - match: CURRENT week
+      beginning:
+        - start of week
+      end:
+        - end of week
+
+    - match: CURRENT month
+      beginning:
+        - start of month
+      end:
+        - end of month
+
+    - match: CURRENT quarter
+      beginning:
+        - start of quater
+      end:
+        - end of quarter
+
+    - match: CURRENT year
+      beginning:
+        - start of year
+      end:
+        - end of year
+
+    - match: 
+        - CURRENT WEEKDAYS
+        - WEEKDAYS
+      beginning:
+        - weekday $WEEKDAYS
+        - start of day
+      end:
+        - weekday $WEEKDAYS
+        - end of day
+
+    - match: 
+        - PAST CARDINAL HOURS
+        - CARDINAL HOURSS ago
+      beginning:
+        - -$CARDINAL hours
+        - start of hour
+      end:
+        - now
+
+    - match: PAST CARDINAL DAYS
+      beginning:
+        - -$CARDINAL days
+        - start of day
+       end:
+        - end of day
+    
+    - match: PAST CARDINAL WEEKS
+      beginning:
+        - -$CARDINAL weeks
+         - start of week
+      end:
+        - end of day
+
+    - match: PAST CARDINAL MONTHS
+      beginning:
+        - -$CARDINAL months
+        - start of month
+      end:
+        - end of month
+
+    - match: PAST CARDINAL YEARS
+      beginning:
+        - -$CARDINAL years
+        - start of year
+      end:
+        - end of year
+
+    - match: PAST CARDINAL QUARTERS
+      beginning:
+        - -$CARDINAL quarters
+        - start of quarter
+      end:
+        - end of quarter
+
+    - match: CARDINAL MONTHS ago
+      beginning:
+        - -$CARDINAL months
+        - start of month
+      end:
+        - beginning
+        - end of month
+
+    - match: CARDINAL DAYS ago
+      beginning:
+        - -$CARDINAL days
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match: CARDINAL WEEKS ago
+      beginning:
+        - -$CARDINAL weeks
+        - start of week
+      end:
+        - beginning
+        - end of week
+
+    - match: CARDINAL QUARTERS ago
+      beginning:
+        - -$CARDINAL quarters
+        - start of quarter
+      end:
+        - beginning
+        - end of week
+
+    - match:
+        - CARDINAL WEEKDAYS ago
+      beginning:
+        - -$CARDINAL weeks
+        - weekday $WEEKDAYS
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match: yesterday
+      beginning:
+        - -1 days
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match: PREVIOUS week
+      beginning:
+        - -1 weeks
+        - start of week
+      end:
+        - beginning
+        - end of week
+
+    - match: PREVIOUS month
+      beginning:
+        - -1 months
+        - start of month
+      end:
+        - beginning
+        - end of month
+
+    - match: PREVIOUS quarter
+      beginning:
+        - -1 quarters
+        - start of quarter
+      end:
+        - beginning
+        - end of quarter
+
+    - match: PREVIOUS year
+      beginning:
+        - -1 years
+        - start of year
+      end:
+        - beginning
+        - end of year
+
+    - match: 
+        - PREVIOUS WEEKDAYS
+      beginning:
+        - -1 weeks
+        - weekday $WEEKDAYS
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match:
+        - this past WEEKDAYS
+        - past WEEKDAYS
+      beginning:
+        - weekday $WEEKDAYS
+        - if future: -1 weeks
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match:
+        - this coming WEEKDAYS
+        - coming WEEKDAYS
+        - this WEEKDAYS
+      beginning:
+        - weekday $WEEKDAYS
+        - if past: +1 weeks
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match:
+        - next hour
+        - hour from now
+        - hour hence
+      beginning:
+        - now
+      end:
+        - +1 hours
+        - end of hour
+
+    - match:
+        - next CARDINAL HOURS
+        - CARDINAL HOURS from now
+        - CARDINAL HOURS hence
+      beginning:
+        - now
+      end:
+        - +$CARDINAL hours
+        - end of hour
+
+    - match:
+        - next CARDINAL DAYS
+        - CARDINAL DAYS from now
+        - CARDINAL DAYS hence
+      beginning:
+        - +1 days
+        - start of day
+      end:
+        - +$CARDINAL days
+        - -1 seconds
+
+    - match:
+        - tomorrow
+        - next day
+      beginning:
+        - +1 days
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match:
+        - next CARDINAL WEEKS
+        - CARDINAL WEEKS from now
+        - CARDINAL WEEKS hence
+      beginning:
+        - +1 weeks
+        - start of week
+      end:
+        - +$CARDINAL weeks
+        - end of week
+
+    - match: next week
+      beginning:
+        - +1 weeks
+        - start of week
+      end:
+        - +1 weeks
+        - ened of week
+
+    - match:
+        - next CARDINAL MONTHS
+        - CARDINAL MONTHS from now
+        - CARDINAL MONTHS hence
+      beginning:
+        - +1 months
+        - start of month
+      end:
+        - +$CARDINAL months
+        - end of month
+
+    - match:
+        - next month
+      beginning:
+        - +1 months
+        - start of month
+      end:
+        - +1 months
+        - end of month
+
+    - match:
+        - next CARDINAL QUARTERS
+        - CARDINAL QUARTERS from now
+        - CARDINAL QUARTERS hence
+      beginning:
+        - +1 quarters
+        - start of quarter
+      end:
+        - +$CARDINAL quarters
+        - end of quarter
+
+    - match:
+        - next quarter
+      beginning:
+        - +1 quarters
+        - start of quarter
+      end:
+        - +1 quarters
+        - end of quarter
+
+    - match:
+        - next CARDINAL YEARS
+        - CARDINAL YEARS from now
+        - CARDINAL YEARS hence
+      beginning:
+        - +1 years
+        - start of years
+      end:
+        - +$CARDINAL years
+        - end of year
+
+    - match:
+        - next year
+      beginning:
+        - +1 years
+        - start of year
+      end:
+        - +1 years
+        - end of year
+
+    - match:
+        - next CARDINAL WEEKDAYS
+        - CARDINAL WEEKDAYS from now
+        - CARDINAL WEEKDAYS hence
+      beginning:
+        - +$CARDINAL weeks
+        - weekday $WEEKDAYS
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match: next WEEKDAYS
+      beginning:
+        - +1 weeks
+        - weekday $WEEKDAYS
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match: 
+        - ORDINAL
+        - ORDINAL this month
+      beginning:
+        - day of month $ORDINAL
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match: ORDINAL last month
+      beginning:
+        - -1 months
+        - day of month $ORDINAL
+        - start of day
+      end:
+        - beginning
+        - end of day
+      
+    - match: ORDINAL next month
+      beginning:
+        - +1 months
+        - day of month $ORDINAL
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match:
+        - end month
+        - end this month
+      beginning:
+        - day of month end
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match: end last month
+      beginning:
+        - -1 months
+        - day of month end
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+    - match: end next month
+      beginning:
+        - +1 months
+        - day of month end
+        - start of day
+      end:
+        - beginning
+        - end of day
+
+# ... more to come ...
