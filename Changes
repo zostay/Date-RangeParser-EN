@@ -1,5 +1,9 @@
 Revision history for Perl extension Date::RangeParser::EN
 
+0.05  Sun Nov 11 13:31:10 2012
+    - Support "since [element]"
+    - Fix case where unit tests would fail on older versions of Date::Manip
+
 0.04  Wed Sep 19 11:43:36 2012
     - Add support for parsing months followed by a 4-digit year, like 
       August 2012
