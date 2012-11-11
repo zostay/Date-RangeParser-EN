@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Date-RangeParser-EN
-version:            0.04
+version:            0.05
 abstract:           Parser for plain English date/time range strings
 author:
     - Michael Aquilina <aquilina@cpan.org>
