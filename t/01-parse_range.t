@@ -300,31 +300,37 @@ my @tests = (
         as_of             => '2013-06-22',
         beg               => '09/01/2012 12:00AM',
         end               => '09/30/2012 11:59PM',
+        dm6_only          => 1,
     }, {
         date_range_string => '9-1-2012 - 9-30-2012',
         as_of             => '2013-06-22',
         beg               => '09/01/2012 12:00AM',
         end               => '09/30/2012 11:59PM',
+        dm6_only          => 1,
     }, {
         date_range_string => '9-1-12 to 9-30-12',
         as_of             => '2013-06-22',
         beg               => '09/01/2012 12:00AM',
         end               => '09/30/2012 11:59PM',
+        dm6_only          => 1,
     }, {
         date_range_string => '9-1 through the 9-30',
         as_of             => '2013-06-22',
         beg               => '09/01/2013 12:00AM',
         end               => '09/30/2013 11:59PM',
+        dm6_only          => 1,
     }, {
         date_range_string => '2012-9-1 to 2012-9-30',
         as_of             => '2013-06-22',
         beg               => '09/01/2012 12:00AM',
         end               => '09/30/2012 11:59PM',
+        dm6_only          => 1,
     }, {
         date_range_string => '2012-9-1 - 2012-9-30',
         as_of             => '2013-06-22',
         beg               => '09/01/2012 12:00AM',
         end               => '09/30/2012 11:59PM',
+        dm6_only          => 1,
     }, {
         date_range_string => 'August 2012',
         as_of             => '2013-06-22',
@@ -380,6 +386,18 @@ my @tests = (
         as_of             => '2012-10-01',
         beg               => '08/24/1989 12:00AM',
         end               => '10/01/2012 11:59PM',
+    }, {
+        date_range_string => '2001',
+        as_of             => '2012-10-01',
+        beg               => '01/01/2001 12:00AM',
+        end               => '12/31/2001 11:59PM',
+        dm6_only          => 1,
+    }, {
+        date_range_string => '1985-04',
+        as_of             => '2012-10-01',
+        beg               => '04/01/1985 12:00AM',
+        end               => '04/30/1985 11:59PM',
+        dm6_only          => 1,
     }
 );
 
@@ -399,7 +417,7 @@ for my $test (@tests)
 
     SKIP: {
         skip "Skipping $test->{date_range_string} because Date::Manip v5.xx doesn't do that sort of thing." => 4
-            if $test->{date_range_string} =~ /^\d-\d/ and $Date::Manip::VERSION lt '6';
+            if $test->{dm6_only} and $Date::Manip::VERSION lt '6';
 
         ok(defined $beg, "Beginning date for $test->{date_range_string} is defined");
         ok(defined $end, "End date for $test->{date_range_string} is defined");

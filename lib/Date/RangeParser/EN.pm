@@ -662,15 +662,10 @@ sub parse_range
     }
 
     # If all else fails, see if Date::Manip can figure this out
-    elsif ($beg = $self->_parse_date_manip($string))
-    {
-        $beg = $beg->set(%bod);
-        $end = $beg->clone->set(hour => 23, minute => 59, second => 59);
-    }
+    else {
+        ($beg, $end) = $self->_parse_date_manip($string);
 
-    else
-    {
-        return ();
+        return () unless $beg;
     }
 
     return ($beg, $end);
@@ -707,7 +702,7 @@ sub _parse_date_manip
 {
     my ($self, $val) = @_;
 
-    my $date;
+    my ($beg, $end);
 
     # wrap in eval as Date::Manip fatally dies on strange input (ie. 010101)
     eval {
@@ -715,9 +710,11 @@ sub _parse_date_manip
         # we need to know what we consider to be "now"
         my $now = $self->_now;
 
+        my ($y, $m, $d, $H, $M, $S);
+        my $end_at = 'd'; # default for DM5, DM6 will overwrite
+
         # If this is all we have or the DM5 interface has been selected by the
         # app, use the ol' functional and reset after each parse.
-        my ($y, $m, $d, $H, $M, $S);
         my $dm_backend = $Date::Manip::Backend || '';
         if ($Date::Manip::VERSION lt '6' or $dm_backend eq 'DM5') {
             my @orig_config = Date::Manip::Date_Init();
@@ -735,12 +732,26 @@ sub _parse_date_manip
             $dm->config("forcedate", $now->ymd . '-' . $now->hms);
             my $err = $dm->parse($val);
 
-            ($y, $m, $d, $H, $M, $S) = $dm->value unless $err;
+            unless ($err) {
+                use Data::Dumper;
+                warn Dumper($dm->{data}{def});
+
+                $end_at = 'y';
+                DATE_FIELD: for my $field (qw( m d h mn s )) {
+                    warn "$val complete? $field ", $dm->complete($field), "\n";
+                    last DATE_FIELD unless $dm->complete($field);
+                    $end_at = $field;
+                }
+
+                warn "PARSED $val END AT $end_at";
+
+                ($y, $m, $d, $H, $M, $S) = $dm->value;
+            }
         }
 
         if ( $y )
         {
-            $date = $self->_datetime_class->new( 
+            $beg = $self->_datetime_class->new( 
                 year   => $y,
                 month  => $m,
                 day    => $d,
@@ -748,10 +759,19 @@ sub _parse_date_manip
                 minute => $M,
                 second => $S,
             );
+
+            $end = $beg->clone;
+            END_DATE: {
+                last END_DATE if $end_at eq 's';  $end->set_second(59);
+                last END_DATE if $end_at eq 'mn'; $end->set_minute(59);
+                last END_DATE if $end_at eq 'h';  $end->set_hour(23);
+                last END_DATE if $end_at eq 'd';  $end->set_day( $self->_datetime_class->last_day_of_month( year => $beg->year, month => $beg->month )->day ); # surely there's an easier way?
+                last END_DATE if $end_at eq 'm';  $end->set_month(12);
+            }
         }
     };
 
-    return $date;
+    return ($beg, $end);
 }
 
 =head1 TO DO
