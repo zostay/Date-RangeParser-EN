@@ -380,6 +380,16 @@ my @tests = (
         as_of             => '2012-10-01',
         beg               => '08/24/1989 12:00AM',
         end               => '10/01/2012 11:59PM',
+    }, {
+        date_range_string => '31st of last month',
+        as_of             => '2012-11-12',
+        beg               => '10/31/2012 12:00AM',
+        end               => '10/31/2012 11:59PM',
+    }, {
+        date_range_string => '31st of 1 month from now',
+        as_of             => '2012-11-12',
+        beg               => '12/31/2012 12:00AM',
+        end               => '12/31/2012 11:59PM',
     }
 );
 

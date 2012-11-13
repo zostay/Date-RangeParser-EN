@@ -6,7 +6,7 @@ use warnings;
 use Date::Manip;
 use DateTime;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 =head1 NAME
 
@@ -562,39 +562,43 @@ sub parse_range
     # The something of the month (or this, last, next, or previous...)
     elsif ($string =~ /^(\d+(?:st|nd|rd|th)?|end) of (this|last|next) month$/)
     {
-        if ($1 eq "end") {
-            $beg = $self->_datetime_class()->last_day_of_month(year => $self->_now()->year,
-                                           month => $self->_now()->month, %bod);
-        } else {
-            my ($d) = $1 =~ /(^\d+)/;   # remove st/nd/rd/th
-            $beg = $self->_bod()->set_day($d);
-        }
+        $beg = $self->_bod()->set_day(1);
 
         if ($2 eq "last") {
-            $beg = $beg->subtract(months => 1, end_of_month => 'preserve');
+            $beg = $beg->subtract(months => 1);
         } elsif ($2 eq "next") {
-            $beg = $beg->add(months => 1, end_of_month => 'preserve');
+            $beg = $beg->add(months => 1);
         }
+
+        if ($1 eq "end") {
+            $beg = $beg->add(months => 1)->add(days => -1);
+        } else {
+            my ($d) = $1 =~ /(^\d+)/;   # remove st/nd/rd/th
+            $beg = $beg->set_day($d);
+        }
+
         $end = $beg->clone->add(days => 1)->subtract(seconds => 1);
     }
     # The something of N month (ago|from now|hence)
     elsif ($string =~ /^(\d+(?:st|nd|rd|th)?|end) of (\d+) months? (ago|from now|hence)$/)
     {
-        if ($1 eq "end") {
-            $beg = $self->_datetime_class()->last_day_of_month(year => $self->_now()->year,
-                                           month => $self->_now()->month, %bod);
-        } else {
-            my ($d) = $1 =~ /(^\d+)/;   # remove st/nd/rd/th
-            $beg = $self->_bod()->set_day($d);
-        }
+        $beg = $self->_bod()->set_day(1);
 
         my $n = $2;     # Avoid call-by-reference side effects in add/subtract
 
         if ($3 eq "ago") {
-            $beg = $beg->subtract(months => $n, end_of_month => 'preserve');
+            $beg = $beg->subtract(months => $n);
         } elsif ($3 eq "from now" || $3 eq "hence") {
-            $beg = $beg->add(months => $n, end_of_month => 'preserve');
+            $beg = $beg->add(months => $n);
         }
+
+        if ($1 eq "end") {
+            $beg = $beg->add(months => 1)->add(days => -1);
+        } else {
+            my ($d) = $1 =~ /(^\d+)/;   # remove st/nd/rd/th
+            $beg = $beg->set_day($d);
+        }
+
         $end = $beg->clone->add(days => 1)->subtract(seconds => 1);
     }
     # Handle rewriting things with months in them

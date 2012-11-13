@@ -1,5 +1,8 @@
 Revision history for Perl extension Date::RangeParser::EN
 
+0.06  Mon Nov 12 19:25:17 2012
+    - Fix bug where "31st of last month" in 11/2012 would not parse properly.
+
 0.05  Sun Nov 11 13:31:10 2012
     - Support "since [element]"
     - Fix case where unit tests would fail on older versions of Date::Manip
